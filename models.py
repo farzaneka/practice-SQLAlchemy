@@ -1,5 +1,8 @@
+import pytest
+
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Integer, String, Date, create_engine
+from sqlalchemy import Column, Integer, String, Date, create_engine,insert
+from sqlalchemy.orm import sessionmaker
 
 
 engine = create_engine("postgres+psycopg2://postgres:postgres@localhost/sqlalchemy_practice")
@@ -15,4 +18,14 @@ class User(Base):
 
 
 Base.metadata.create_all(bind=engine)
+
+
+Session = sessionmaker(bind=engine)
+session = Session()
+session.add(User(first_name='farzaneh', last_name='kamaloo'))
+session.commit()
+
+
+def test_get_user():
+    assert session.query(User).get(1).first_name == 'farzaneh'
 
