@@ -20,14 +20,21 @@ class User(Base):
 Base.metadata.create_all(bind=engine)
 
 
-Session = sessionmaker(bind=engine)
-session = Session()
-session.add(User(first_name='farzaneh', last_name='kamaloo'))
-session.commit()
-
-
 def test_get_user():
-    q = session.query(User).filter(User.id == 1)
-    assert session.query(q.exists())
+    user_1 = User(first_name='user_1', last_name='user_1')
+
+    Session = sessionmaker(bind=engine)
+    session = Session()
+    session.add(user_1)
+    session.commit()
+
+    assert session.query(User).filter(User.first_name == 'foo').count() == 0
+    #assert session.query(User).order_by(User.first_name)
+    #assert session.query(User).filter(User.first_name == 'user_1').one()
+    assert session.query(User).filter(User.first_name == 'foo').one_or_none() == None
+    #assert session.query(User).all()
+    query = session.query(User).filter(User.first_name == 'user_1')
+    assert session.query(query.exists())
     assert session.query(User).get(1).first_name == 'farzaneh'
+    #assert session.query(User).limit(5)
 
