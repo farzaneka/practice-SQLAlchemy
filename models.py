@@ -1,11 +1,14 @@
 import pytest
+import unittest
 
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, String, Date, create_engine
 from sqlalchemy.orm import sessionmaker
 
 
-engine = create_engine("postgres+psycopg2://postgres:postgres@localhost/sqlalchemy_practice")
+engine = create_engine(
+    "postgres+psycopg2://postgres:postgres@localhost/sqlalchemy_practice"
+)
 Base = declarative_base()
 
 
@@ -20,21 +23,32 @@ class User(Base):
 Base.metadata.create_all(bind=engine)
 
 
-def test_get_user():
-    user_1 = User(first_name='user_1', last_name='user_1')
+class TestUser(unittest.TestCase):
 
-    Session = sessionmaker(bind=engine)
-    session = Session()
-    session.add(user_1)
-    session.commit()
+    def setUp(self):
+        self.user_1 = User(
+            first_name='first_user_name',
+            last_name='first_user_last_name'
+        )
 
-    assert session.query(User).filter(User.first_name == 'foo').count() == 0
-    #assert session.query(User).order_by(User.first_name)
-    #assert session.query(User).filter(User.first_name == 'user_1').one()
-    assert session.query(User).filter(User.first_name == 'foo').one_or_none() == None
-    #assert session.query(User).all()
-    query = session.query(User).filter(User.first_name == 'user_1')
-    assert session.query(query.exists())
-    assert session.query(User).get(1).first_name == 'farzaneh'
-    #assert session.query(User).limit(5)
+        Session = sessionmaker(bind=engine)
+        self.session = Session()
+        self.session.add(self.user_1)
+
+    def test_get_user(self):
+        query = self.session.query(User).filter(
+            User.first_name == self.user_1.first_name
+        )
+        assert self.session.query(User).filter(
+            User.first_name == self.user_1.first_name).count() == 1
+        assert self.session.query(User).order_by(User.last_name) != None
+        assert self.session.query(User).filter(
+            User.first_name == self.user_1.first_name).one() == self.user_1
+        assert self.session.query(User).filter(
+            User.first_name == 'foo').one_or_none() == None
+        assert self.session.query(User).all()[0].first_name == \
+            self.user_1.first_name
+        assert self.session.query(query.exists())
+        assert self.session.query(User).get(1) == None
+        assert self.session.query(User).first() == self.user_1
 
