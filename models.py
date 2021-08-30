@@ -39,8 +39,12 @@ class TestUser(unittest.TestCase):
         query = self.session.query(User).filter(
             User.first_name == self.user_1.first_name
         )
-        assert self.session.query(User).filter(
-            User.first_name == self.user_1.first_name).count() == 1
+        
+        user_count = self.session.query(User) \
+            .filter(User.first_name == self.user_1.first_name) \
+            .count()
+        assert user_count == 1
+        
         assert self.session.query(User).order_by(User.last_name) != None
         assert self.session.query(User).filter(
             User.first_name == self.user_1.first_name).one() == self.user_1
