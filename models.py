@@ -2,8 +2,9 @@ import unittest
 
 import pytest
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Integer, String, Date, create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy import Column, Integer, String, Date, create_engine, \
+    ForeignKey, DateTime
+from sqlalchemy.orm import sessionmaker, relationship
 
 
 engine = create_engine(
@@ -18,6 +19,17 @@ class User(Base):
     first_name = Column('first_name',String)
     last_name = Column('last_name', String)
     birthday = Column('birthday', Date)
+    projects = relationship('Project', back_populates='manager_id')
+
+
+class Project(Base):
+    __tablename__ = 'project'
+    id = Column(Integer, primary_key=True)
+    title = Column('title', String)
+    primary_manager_id = Column(Integer, ForeignKey('user.id'))
+    created_at = Column('created_at', DateTime)
+    modified_at = Column('modified_at', DateTime)
+    manager_id = relationship('User', back_populates='projects')
 
 
 Base.metadata.create_all(bind=engine)
@@ -29,6 +41,7 @@ class TestUser(unittest.TestCase):
         Session = sessionmaker(bind=engine)
         self.session = Session()
         self.session.query(User).delete()
+        self.session.query(Project).delete()
 
         self.user_1 = User(
             first_name='first_user_name',
@@ -47,7 +60,17 @@ class TestUser(unittest.TestCase):
             last_name='third_user_last_name'
         )
         self.session.add(self.user_3)
+
+        self.project_1 = Project(
+            title='first_project'
+        )
+        self.session.add(self.project_1)
         self.session.commit()
+
+    def test_get_project(self):
+        first_project = self.session.query(Project) \
+            .get(self.project_1.id)
+        assert first_project.title == 'first_project'
 
     def test_get_user(self):
         first_user = self.session.query(User) \
