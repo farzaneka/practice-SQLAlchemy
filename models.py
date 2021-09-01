@@ -59,8 +59,8 @@ class TestUser(unittest.TestCase):
             .order_by(User.id) \
             .all()
         assert len(user_order_by_id) == 3
-        assert user_order_by_id[0].id < user_order_by_id[1].id
-        assert user_order_by_id[1] == self.user_2
+        assert user_order_by_id[0].id < user_order_by_id[1].id < \
+            user_order_by_id[2].id
 
         unique_user =  self.session.query(User) \
             .filter(User.first_name == 'second_user_name') \
@@ -88,5 +88,4 @@ class TestUser(unittest.TestCase):
             .limit(2) \
             .all()
         assert len(user_get_by_two_limit) == 2
-        assert user_get_by_two_limit == [self.user_1, self.user_2]
 
