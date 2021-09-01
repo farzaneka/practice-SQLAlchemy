@@ -67,7 +67,6 @@ class TestUser(unittest.TestCase):
         self.session.add(self.project_1)
         self.session.commit()
 
-
     def test_get_project(self):
         first_project = self.session.query(Project) \
             .get(self.project_1.id)
