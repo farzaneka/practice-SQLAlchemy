@@ -41,6 +41,7 @@ class TestUser(unittest.TestCase):
         Session = sessionmaker(bind=engine)
         self.session = Session()
         self.session.query(User).delete()
+        self.session.query(Project).delete()
 
         self.user_1 = User(
             first_name='first_user_name',
@@ -59,7 +60,19 @@ class TestUser(unittest.TestCase):
             last_name='third_user_last_name'
         )
         self.session.add(self.user_3)
+
+        self.project_1 = Project(
+            title='first_project'
+        )
+        self.session.add(self.project_1)
         self.session.commit()
+
+
+    def test_get_project(self):
+        first_project = self.session.query(Project) \
+            .get(self.project_1.id)
+        assert first_project.title == 'first_project'
+
 
     def test_get_user(self):
         first_user = self.session.query(User) \
