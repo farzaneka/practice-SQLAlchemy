@@ -19,7 +19,10 @@ class User(Base):
     first_name = Column('first_name',String)
     last_name = Column('last_name', String)
     birthday = Column('birthday', Date)
-    projects = relationship('Project', back_populates='manager_id')
+    projects = relationship(
+        'Project',
+        back_populates='manager_id'
+    )
 
 
 class Project(Base):
@@ -27,10 +30,19 @@ class Project(Base):
     id = Column(Integer, primary_key=True)
     title = Column('title', String)
     primary_manager_id = Column(Integer, ForeignKey('user.id'))
+    secondary_manager_id = Column(Integer, ForeignKey('user.id'))
     created_at = Column('created_at', DateTime)
     modified_at = Column('modified_at', DateTime)
-    manager_id = relationship('User', back_populates='projects')
-
+    manager_id = relationship(
+        'User',
+        foreign_keys=[primary_manager_id],
+        back_populates='projects'
+    )
+    secondary_manager = relationship(
+        'User',
+        foreign_keys=[secondary_manager_id],
+        back_populates='projects'
+    )
 
 Base.metadata.create_all(bind=engine)
 
