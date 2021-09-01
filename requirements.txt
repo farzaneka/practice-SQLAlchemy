@@ -1,4 +1,14 @@
+attrs==21.2.0
+importlib-metadata==4.7.1
+iniconfig==1.1.1
+packaging==21.0
+pluggy==0.13.1
 psycopg2==2.7.6.1
 psycopg2-binary==2.7.6.1
+py==1.10.0
+pyparsing==2.4.7
+pytest==6.2.4
 SQLAlchemy==1.2.15
-
+toml==0.10.2
+typing-extensions==3.10.0.0
+zipp==3.5.0
