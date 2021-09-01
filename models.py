@@ -2,8 +2,8 @@ import unittest
 
 import pytest
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Integer, String, Date, create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy import Column, Integer, String, Date, create_engine, ForeignKey
+from sqlalchemy.orm import sessionmaker, relationship
 
 
 engine = create_engine(
@@ -18,6 +18,16 @@ class User(Base):
     first_name = Column('first_name',String)
     last_name = Column('last_name', String)
     birthday = Column('birthday', Date)
+    projects = relationship("Project", back_populates="user")
+
+class Project(Base):
+    __tablename__ = 'project'
+    id = Column(Integer, primary_key=True)
+    title = Column('title', String)
+    manager_id = Column(Integer, ForeignKey('user.id'))
+    created_at = Column('created_at', Date)
+    modified_at = Column('modified_at', Date)
+    user = relationship("User", back_populates="projects")
 
 
 Base.metadata.create_all(bind=engine)
