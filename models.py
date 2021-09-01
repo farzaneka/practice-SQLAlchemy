@@ -73,7 +73,6 @@ class TestUser(unittest.TestCase):
             .get(self.project_1.id)
         assert first_project.title == 'first_project'
 
-
     def test_get_user(self):
         first_user = self.session.query(User) \
             .filter(User.first_name == 'first_user_name')
