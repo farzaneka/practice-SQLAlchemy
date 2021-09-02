@@ -21,7 +21,13 @@ class User(Base):
     birthday = Column('birthday', Date)
     projects = relationship(
         'Project',
-        back_populates='manager_id'
+        primaryjoin='Project.primary_manager_id == User.id',
+        back_populates='manager'
+    )
+    secondary_projects = relationship(
+        'Project',
+        primaryjoin='Project.secondary_manager_id == User.id',
+        back_populates='secondary_manager'
     )
 
 
@@ -33,7 +39,7 @@ class Project(Base):
     secondary_manager_id = Column(Integer, ForeignKey('user.id'))
     created_at = Column('created_at', DateTime)
     modified_at = Column('modified_at', DateTime)
-    manager_id = relationship(
+    manager = relationship(
         'User',
         foreign_keys=[primary_manager_id],
         back_populates='projects'
@@ -41,8 +47,9 @@ class Project(Base):
     secondary_manager = relationship(
         'User',
         foreign_keys=[secondary_manager_id],
-        back_populates='projects'
+        back_populates='secondary_projects'
     )
+
 
 Base.metadata.create_all(bind=engine)
 
