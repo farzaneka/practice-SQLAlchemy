@@ -1,9 +1,10 @@
 import unittest
+import datetime
 
 import pytest
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, String, Date, create_engine, \
-    ForeignKey, DateTime
+    ForeignKey, DateTime, event
 from sqlalchemy.orm import sessionmaker, relationship
 
 
@@ -37,7 +38,7 @@ class Project(Base):
     title = Column('title', String)
     primary_manager_id = Column(Integer, ForeignKey('user.id'))
     secondary_manager_id = Column(Integer, ForeignKey('user.id'))
-    created_at = Column('created_at', DateTime)
+    created_at = Column('created_at', DateTime, default=datetime.datetime.now())
     modified_at = Column('modified_at', DateTime)
     manager = relationship(
         'User',
@@ -49,6 +50,11 @@ class Project(Base):
         foreign_keys=[secondary_manager_id],
         back_populates='secondary_projects'
     )
+
+
+@event.listens_for(Project, 'after_update')
+def receive_after_update(mapper, connection, target):
+    traget.modified_at = datetime.datetime.now()
 
 
 Base.metadata.create_all(bind=engine)
