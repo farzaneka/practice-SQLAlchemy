@@ -5,7 +5,7 @@ import pytest
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, String, Date, create_engine, \
     ForeignKey, DateTime, event
-from sqlalchemy.orm import sessionmaker, relationship
+from sqlalchemy.orm import sessionmaker, relationship, column_property
 
 
 engine = create_engine(
@@ -17,9 +17,11 @@ Base = declarative_base()
 class User(Base):
     __tablename__ = 'user'
     id = Column(Integer, primary_key=True)
-    first_name = Column('first_name',String)
+    first_name = Column('first_name', String)
     last_name = Column('last_name', String)
-    birthday = Column('birthday', Date)
+    full_name = column_property(first_name + ' ' + last_name)
+    birthday = Column('birthday', Date, nullable=False)
+    age = column_property(datetime.date.today() - birthday)
     projects = relationship(
         'Project',
         primaryjoin='Project.primary_manager_id == User.id',
@@ -114,6 +116,7 @@ class TestUser(unittest.TestCase):
             .filter(User.first_name == 'second_user_name') \
             .one()
         assert unique_user.last_name == 'second_user_last_name'
+        assert unique_user.full_name == 'second_user_name second_user_last_name'
 
         user_count = self.session.query(User) \
             .filter(User.first_name == 'first_user_name') \
