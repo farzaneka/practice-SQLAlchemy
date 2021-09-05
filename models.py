@@ -29,8 +29,8 @@ class User(Base):
         func.date_part(
             'year',
             birthday)
-    ))
-
+        )
+    )
     projects = relationship(
         'Project',
         primaryjoin='Project.primary_manager_id == User.id',
