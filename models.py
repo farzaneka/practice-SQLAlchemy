@@ -21,14 +21,16 @@ class User(Base):
     last_name = Column('last_name', String)
     full_name = column_property(first_name + ' ' + last_name)
     birthday = Column('birthday', Date, nullable=False)
-    age = column_property(func.date_part(
-        'year',
-        func.current_date()
-    ) - \
-    (
+    age = column_property(
         func.date_part(
             'year',
-            birthday)
+            func.current_date()
+        ) - \
+        (
+            func.date_part(
+                'year',
+                birthday
+            )
         )
     )
     projects = relationship(
