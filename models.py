@@ -4,7 +4,7 @@ import datetime
 import pytest
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, String, Date, create_engine, \
-    ForeignKey, DateTime, event
+    ForeignKey, DateTime, event, func
 from sqlalchemy.orm import sessionmaker, relationship, column_property
 
 
@@ -21,7 +21,7 @@ class User(Base):
     last_name = Column('last_name', String)
     full_name = column_property(first_name + ' ' + last_name)
     birthday = Column('birthday', Date, nullable=False)
-    age = column_property(datetime.date.today() - birthday)
+    age = column_property(func.current_date() - birthday)
     projects = relationship(
         'Project',
         primaryjoin='Project.primary_manager_id == User.id',
@@ -72,19 +72,22 @@ class TestUser(unittest.TestCase):
 
         self.user_1 = User(
             first_name='first_user_name',
-            last_name='first_user_last_name'
+            last_name='first_user_last_name',
+            birthday=datetime.date.today()
         )
         self.session.add(self.user_1)
 
         self.user_2 = User(
             first_name='second_user_name',
-            last_name='second_user_last_name'
+            last_name='second_user_last_name',
+            birthday=datetime.date.today() - datetime.timedelta(days=400)
         )
         self.session.add(self.user_2)
 
         self.user_3 = User(
             first_name='third_user_name',
-            last_name='third_user_last_name'
+            last_name='third_user_last_name',
+            birthday=datetime.date.today()
         )
         self.session.add(self.user_3)
 
@@ -103,7 +106,7 @@ class TestUser(unittest.TestCase):
         first_user = self.session.query(User) \
             .filter(User.first_name == 'first_user_name')
         first_user_exists = self.session.query(first_user.exists()).first()
-        assert first_user_exists[0] == True
+        assert first_user_exists[0] is True
 
         user_order_by_id = self.session.query(User) \
             .order_by(User.id) \
@@ -112,11 +115,12 @@ class TestUser(unittest.TestCase):
         assert user_order_by_id[0].id < user_order_by_id[1].id < \
             user_order_by_id[2].id
 
-        unique_user =  self.session.query(User) \
+        unique_user = self.session.query(User) \
             .filter(User.first_name == 'second_user_name') \
             .one()
         assert unique_user.last_name == 'second_user_last_name'
         assert unique_user.full_name == 'second_user_name second_user_last_name'
+        assert unique_user.age == 0
 
         user_count = self.session.query(User) \
             .filter(User.first_name == 'first_user_name') \
@@ -126,12 +130,12 @@ class TestUser(unittest.TestCase):
         user_filter_by_first_name =  self.session.query(User) \
             .filter(User.first_name == 'foo') \
             .one_or_none()
-        assert user_filter_by_first_name == None
+        assert user_filter_by_first_name is None
 
         total_users = self.session.query(User).all()
         assert total_users[0].first_name == 'first_user_name'
 
-        user_get_by_id =  self.session.query(User) \
+        user_get_by_id = self.session.query(User) \
             .get(self.user_1.id)
         assert user_get_by_id.first_name == 'first_user_name'
 
@@ -139,4 +143,3 @@ class TestUser(unittest.TestCase):
             .limit(2) \
             .all()
         assert len(user_get_by_two_limit) == 2
-
