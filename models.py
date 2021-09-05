@@ -21,7 +21,16 @@ class User(Base):
     last_name = Column('last_name', String)
     full_name = column_property(first_name + ' ' + last_name)
     birthday = Column('birthday', Date, nullable=False)
-    age = column_property(func.current_date() - birthday)
+    age = column_property(func.date_part(
+        'year',
+        func.current_date()
+    ) - \
+    (
+        func.date_part(
+            'year',
+            birthday)
+    ))
+
     projects = relationship(
         'Project',
         primaryjoin='Project.primary_manager_id == User.id',
@@ -80,7 +89,7 @@ class TestUser(unittest.TestCase):
         self.user_2 = User(
             first_name='second_user_name',
             last_name='second_user_last_name',
-            birthday=datetime.date.today() - datetime.timedelta(days=400)
+            birthday=datetime.date.today() - datetime.timedelta(days=500)
         )
         self.session.add(self.user_2)
 
@@ -120,7 +129,7 @@ class TestUser(unittest.TestCase):
             .one()
         assert unique_user.last_name == 'second_user_last_name'
         assert unique_user.full_name == 'second_user_name second_user_last_name'
-        assert unique_user.age == 0
+        assert int(unique_user.age) == 1
 
         user_count = self.session.query(User) \
             .filter(User.first_name == 'first_user_name') \
